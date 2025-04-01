@@ -1,18 +1,25 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Calendar, Mail, MapPin, Phone } from "lucide-react"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Calendar, Mail, MapPin, Phone } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ContactInfo } from "@/models/contact-info";
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
@@ -22,22 +29,53 @@ export function ContactSection() {
     projectType: "",
     message: "",
     budget: "",
-  })
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const [contactData, setContactData] = useState<ContactInfo>({
+    address: "",
+    email: "",
+    phone: "",
+    officeHours: "",
+    mapEmbedded: "https://www.google.com/maps/embed?pb=...",
+  });
+
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: "",
+    pinterest: "",
+    linkedin: "",
+    whatsapp: "",
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch("/api/contact-info").then(
+        async (result) => await result.json()
+      );
+      const socialResponse = await fetch("/api/social-media").then(
+        async (result) => await result.json()
+      );
+      setContactData(response);
+      setSocialLinks(socialResponse);
+    };
+
+    fetchData();
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle form submission
-    console.log(formData)
-    alert("Thank you for your inquiry! We'll be in touch soon.")
+    alert("Thank you for your inquiry! We'll be in touch soon.");
     setFormData({
       name: "",
       email: "",
@@ -45,8 +83,8 @@ export function ContactSection() {
       projectType: "",
       message: "",
       budget: "",
-    })
-  }
+    });
+  };
 
   return (
     <section id="contact" className="py-20 md:py-32 bg-muted/30">
@@ -56,7 +94,8 @@ export function ContactSection() {
             Let's Create Something Beautiful Together
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground">
-            Ready to transform your space? Get in touch with us to schedule a consultation or discuss your project.
+            Ready to transform your space? Get in touch with us to schedule a
+            consultation or discuss your project.
           </p>
         </div>
 
@@ -69,10 +108,12 @@ export function ContactSection() {
           >
             <div className="space-y-6">
               <div>
-                <h3 className="mb-4 text-2xl font-semibold">Contact Information</h3>
+                <h3 className="mb-4 text-2xl font-semibold">
+                  Contact Information
+                </h3>
                 <p className="text-muted-foreground">
-                  We'd love to hear from you. Reach out to us through any of the following channels or fill out the
-                  form.
+                  We'd love to hear from you. Reach out to us through any of the
+                  following channels or fill out the form.
                 </p>
               </div>
 
@@ -81,7 +122,9 @@ export function ContactSection() {
                   <MapPin className="mr-4 h-5 w-5 text-primary" />
                   <div>
                     <h4 className="font-medium">Studio Location</h4>
-                    <p className="text-muted-foreground">123 Design Avenue, New York, NY 10001</p>
+                    <p className="text-muted-foreground">
+                      {contactData.address}
+                    </p>
                   </div>
                 </div>
 
@@ -89,7 +132,7 @@ export function ContactSection() {
                   <Mail className="mr-4 h-5 w-5 text-primary" />
                   <div>
                     <h4 className="font-medium">Email Us</h4>
-                    <p className="text-muted-foreground">hello@designstudio.com</p>
+                    <p className="text-muted-foreground">{contactData.email}</p>
                   </div>
                 </div>
 
@@ -97,7 +140,7 @@ export function ContactSection() {
                   <Phone className="mr-4 h-5 w-5 text-primary" />
                   <div>
                     <h4 className="font-medium">Call Us</h4>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                    <p className="text-muted-foreground">{contactData.phone}</p>
                   </div>
                 </div>
 
@@ -105,8 +148,9 @@ export function ContactSection() {
                   <Calendar className="mr-4 h-5 w-5 text-primary" />
                   <div>
                     <h4 className="font-medium">Office Hours</h4>
-                    <p className="text-muted-foreground">Monday - Friday: 9am - 6pm</p>
-                    <p className="text-muted-foreground">Saturday: By appointment only</p>
+                    <p className="text-muted-foreground">
+                      {contactData.officeHours}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -114,10 +158,10 @@ export function ContactSection() {
               <div className="pt-6">
                 <h3 className="mb-4 text-2xl font-semibold">Follow Us</h3>
                 <div className="flex flex-wrap gap-4">
-                  {["Instagram", "Pinterest", "LinkedIn", "Houzz"].map((platform) => (
+                  {Object.entries(socialLinks).map(([platform, link]) => (
                     <a
                       key={platform}
-                      href="#"
+                      href={link}
                       className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary"
                     >
                       {platform}
@@ -179,15 +223,23 @@ export function ContactSection() {
                         <Label htmlFor="projectType">Project Type</Label>
                         <Select
                           value={formData.projectType}
-                          onValueChange={(value) => handleSelectChange("projectType", value)}
+                          onValueChange={(value) =>
+                            handleSelectChange("projectType", value)
+                          }
                         >
                           <SelectTrigger id="projectType">
                             <SelectValue placeholder="Select project type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="residential">Residential</SelectItem>
-                            <SelectItem value="commercial">Commercial</SelectItem>
-                            <SelectItem value="hospitality">Hospitality</SelectItem>
+                            <SelectItem value="residential">
+                              Residential
+                            </SelectItem>
+                            <SelectItem value="commercial">
+                              Commercial
+                            </SelectItem>
+                            <SelectItem value="hospitality">
+                              Hospitality
+                            </SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
@@ -198,7 +250,9 @@ export function ContactSection() {
                       <Label>Budget Range</Label>
                       <RadioGroup
                         value={formData.budget}
-                        onValueChange={(value) => handleSelectChange("budget", value)}
+                        onValueChange={(value) =>
+                          handleSelectChange("budget", value)
+                        }
                         className="flex flex-wrap gap-4"
                       >
                         <div className="flex items-center space-x-2">
@@ -252,6 +306,5 @@ export function ContactSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
-

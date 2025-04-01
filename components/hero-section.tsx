@@ -1,26 +1,26 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { motion } from "framer-motion"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 export function HeroSection() {
-  const [currentImage, setCurrentImage] = useState(0);
+  const [currentImage, setCurrentImage] = useState(0)
   const images = [
-    "/banner-1.jpg",
-    "/banner-2.jpg",
-    "/banner-3.jpg",
-  ];
+    "/placeholder.svg?height=1080&width=1920",
+    "/placeholder.svg?height=1080&width=1920",
+    "/placeholder.svg?height=1080&width=1920",
+  ]
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [images.length]);
+      setCurrentImage((prev) => (prev + 1) % images.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [images.length])
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
@@ -52,8 +52,7 @@ export function HeroSection() {
             Designing Spaces, Creating Experiences
           </h1>
           <p className="mb-8 text-lg text-white/90 md:text-xl">
-            Transforming interiors with thoughtful design that balances
-            aesthetics and functionality
+            Transforming interiors with thoughtful design that balances aesthetics and functionality
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-base">
@@ -71,5 +70,6 @@ export function HeroSection() {
         </motion.div>
       </div>
     </section>
-  );
+  )
 }
+

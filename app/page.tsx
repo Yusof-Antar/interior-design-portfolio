@@ -9,6 +9,7 @@ import { AboutSection } from "@/components/about-section";
 import { ServicesSection } from "@/components/services-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { ContactSection } from "@/components/contact-section";
+import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Interior Design Portfolio | Creating Spaces, Crafting Experiences",
@@ -80,48 +81,7 @@ export default function Home() {
         <TestimonialsSection />
         <ContactSection />
       </main>
-      <footer className="border-t bg-muted/40">
-        <div className="container flex flex-col md:flex-row items-center justify-between py-10 md:py-16">
-          <div className="flex flex-col items-center md:items-start mb-8 md:mb-0">
-            <Link
-              href="/"
-              className="text-xl font-semibold tracking-tight mb-2"
-            >
-              STUDIO<span className="text-primary">.</span>
-            </Link>
-            <p className="text-sm text-muted-foreground max-w-md text-center md:text-left">
-              Creating beautiful, functional spaces that inspire and elevate
-              everyday living.
-            </p>
-          </div>
-          <div className="flex flex-col items-center md:items-end">
-            <div className="flex gap-6 mb-4">
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Instagram
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Pinterest
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                LinkedIn
-              </Link>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} Studio Interior Design. All rights
-              reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
