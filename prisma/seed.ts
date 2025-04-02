@@ -1,8 +1,8 @@
-import { PrismaClient } from "./generated/client";
+import { PrismaClient } from "@prisma/client";
+
 
 const prisma = new PrismaClient();
 
-console.log("HERROR");
 async function main() {
   await prisma.contactInfo.upsert({
     where: { id: "1" },

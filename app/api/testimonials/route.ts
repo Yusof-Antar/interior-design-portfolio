@@ -4,7 +4,7 @@ import multer from "multer";
 import { NextRequest, NextResponse } from "next/server";
 import { join } from "path";
 import fs from "fs";
-import { uploadFile } from "@/lib/fileUpload";
+import { uploadFile } from "@/lib/supabase";
 
 export const config = {
   api: {
@@ -71,7 +71,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Upload the file using the utility function
     const folderName = "testimonials"; // Default folder
-    const filePath = await uploadFile(file, uploadBaseDir, folderName);
+    const filePath = await uploadFile(file, "uploads", "testimonials");
 
     // Create a new testimonial record in the database
     const testimonial = await prisma.testimonial.create({

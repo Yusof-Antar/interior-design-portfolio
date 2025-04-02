@@ -1,4 +1,4 @@
-import { uploadFile } from "@/lib/fileUpload";
+import { uploadFile } from "@/lib/supabase";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { join } from "path";
@@ -97,7 +97,7 @@ export async function PUT(
     // Upload the new file if provided
     if (file) {
       const folderName = "testimonials"; // Default folder
-      filePath = await uploadFile(file, uploadBaseDir, folderName);
+      filePath = await uploadFile(file, "uploads", "testimonials");
     }
 
     // Update the testimonial record in the database

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { join } from "path";
-import { uploadFile } from "@/lib/fileUpload";
+import { uploadFile } from "@/lib/supabase";
 
 // GET: Fetch all projects with their associated images
 export async function GET() {
@@ -72,7 +72,7 @@ export async function POST(request: Request): Promise<Response> {
     // Upload each file and store their paths
     const imagePaths: string[] = [];
     for (const file of files) {
-      const filePath = await uploadFile(file, uploadBaseDir, "portfolio");
+      const filePath = await uploadFile(file, "uploads", "portfolio");
       imagePaths.push(filePath);
     }
 

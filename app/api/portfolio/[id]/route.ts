@@ -1,8 +1,8 @@
 import { join } from "path";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { uploadFile } from "@/lib/fileUpload";
 import fs from "fs";
+import { uploadFile } from "@/lib/supabase";
 
 export async function PUT(
   request: Request,
@@ -91,7 +91,7 @@ export async function PUT(
     // Upload each new file and store their paths
     const newImagePaths: string[] = [];
     for (const file of files) {
-      const filePath = await uploadFile(file, uploadBaseDir, "portfolio");
+      const filePath = await uploadFile(file, "uploads", "portfolio");
       newImagePaths.push(filePath);
     }
 

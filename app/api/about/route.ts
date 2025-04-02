@@ -1,5 +1,5 @@
-import { uploadFile } from "@/lib/fileUpload";
 import prisma from "@/lib/prisma";
+import { uploadFile } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 import { join } from "path";
 
@@ -60,7 +60,7 @@ export async function PUT(req: Request) {
     // Upload the new file if provided
     if (file instanceof File) {
       const folderName = "about"; // Default folder
-      filePath = await uploadFile(file, uploadBaseDir, folderName);
+      filePath = await uploadFile(file, "uploads", "about");
     } else if (typeof file === "string") {
       // Retain the existing image URL if no new file is uploaded
       filePath = file;
