@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")  
+}
+
+// 1. User
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+// 2. Header (Hero Section)
+model Header {
+  id                  String        @id @default(uuid())
+  logoText            String
+  heroTitle           String
+  heroSubtitle        String
+  primaryButtonText   String
+  primaryButtonLink   String
+  secondaryButtonText String
+  secondaryButtonLink String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  HeaderImage         HeaderImage[]
+}
+
+// 2.1 Header Images Table
+model HeaderImage {
+  id        String   @id @default(uuid())
+  path      String // Image URL
+  headerId  String
+  header    Header   @relation(fields: [headerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+//* 3. Project Category
+model ProjectCategory {
+  id        String    @id @default(uuid())
+  title     String    @unique
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  Project   Project[]
+}
+
+// 4. Project
+model Project {
+  id           String          @id @default(uuid())
+  title        String
+  description  String
+  link         String? // Optional external project link
+  categoryId   String
+  category     ProjectCategory @relation(fields: [categoryId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  ProjectImage ProjectImage[]
+}
+
+// 4.1 Project Images Table
+model ProjectImage {
+  id        String   @id @default(uuid())
+  path      String // Image URL
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+//* 5. About Section
+model About {
+  id          String      @id @default(uuid())
+  studio      String
+  year        String
+  description String
+  mission     String
+  vision      String
+  quote       String
+  quoteAuthor String
+  image       String // URL of about section image
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  Expertise   Expertise[]
+}
+
+//* 5.1 Expertise Table
+model Expertise {
+  id        String   @id @default(uuid())
+  path      String // Expertise text
+  aboutId   String
+  about     About    @relation(fields: [aboutId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+//* 6. Services
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  icon        String // URL of service icon
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+//* 7. Testimonials
+model Testimonial {
+  id             String   @id @default(uuid())
+  text           String
+  clientName     String
+  clientPosition String
+  avatar         String // URL of client's avatar
+  createdAt      DateTime @default(now())
+}
+
+//* 8. Awards & Recognitions
+model Award {
+  id           String   @id @default(uuid())
+  title        String
+  year         Int
+  organization String
+  createdAt    DateTime @default(now())
+}
+
+//* 9. Contact Information
+model ContactInfo {
+  id          String   @id @default(uuid())
+  address     String
+  email       String
+  phone       String
+  officeHours String
+  mapEmbedded String   @db.Text
+  createdAt   DateTime @default(now())
+}
+
+//* 10. Social Media Links
+model SocialMedia {
+  id        String   @id @default(uuid())
+  title     String
+  text      String
+  createdAt DateTime @default(now())
+}
+
+// 11. Form Types (Dropdown options)
+model FormType {
+  id        String   @id @default(uuid())
+  title     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  Form      Form[]
+}
+
+// 12. Form Budget (Dropdown options)
+model FormBudget {
+  id        String   @id @default(uuid())
+  text      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  Form      Form[]
+}
+
+// 13. Forms (Contact/Inquiry Forms)
+model Form {
+  id        String      @id @default(uuid())
+  subject   String
+  body      String
+  email     String
+  typeId    String
+  type      FormType    @relation(fields: [typeId], references: [id])
+  budgetId  String?
+  budget    FormBudget? @relation(fields: [budgetId], references: [id])
+  createdAt DateTime    @default(now())
+}
+
+// 14. Form Settings
+model FormSetting {
+  id                  String   @id @default(uuid())
+  subjectLine         String
+  confirmationMessage String
+  showType            Boolean  @default(true)
+  showBudget          Boolean  @default(true)
+  createdAt           DateTime @default(now())
+}

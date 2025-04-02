@@ -1,7 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/client";
 
 const prisma = new PrismaClient();
 
+console.log("HERROR");
 async function main() {
   await prisma.contactInfo.upsert({
     where: { id: "1" },
@@ -26,7 +27,7 @@ async function main() {
     skipDuplicates: true, // Prevents errors if data already exists
   });
   await prisma.about.upsert({
-    where: {id: "1"},
+    where: { id: "1" },
     update: {},
     create: {
       studio: "Studio Name",
