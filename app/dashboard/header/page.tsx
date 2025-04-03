@@ -47,7 +47,7 @@ export default function HeaderPage() {
         // Initialize keptImages with existing image IDs and paths
         setFormData((prev) => ({
           ...prev,
-          keptImages: data.HeaderImage.map((img) => ({
+          keptImages: data.HeaderImage?.map((img) => ({
             id: img.id,
             path: img.path,
           })),
@@ -185,7 +185,7 @@ export default function HeaderPage() {
         setHeaderData(updatedData);
         setFormData({
           images: [],
-          keptImages: updatedData.HeaderImage.map((img) => ({
+          keptImages: updatedData.HeaderImage?.map((img) => ({
             id: img.id,
             path: img.path,
           })),
