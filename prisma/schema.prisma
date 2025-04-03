@@ -63,7 +63,7 @@ model ProjectCategory {
   Project   Project[]
 }
 
-// 4. Project
+//* 4. Project
 model Project {
   id           String          @id @default(uuid())
   title        String
@@ -76,7 +76,7 @@ model Project {
   ProjectImage ProjectImage[]
 }
 
-// 4.1 Project Images Table
+//* 4.1 Project Images Table
 model ProjectImage {
   id        String   @id @default(uuid())
   path      String // Image URL

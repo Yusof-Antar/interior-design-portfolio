@@ -32,7 +32,7 @@ export default function LoginPage() {
     // Simulate authentication - in a real app, this would be an API call
     setTimeout(() => {
       // Demo credentials: admin@studio.com / password
-      if (email === "admin@studio.com" && password === "password") {
+      if (email === "Janaalaswad33@gmail.com" && password === "Ja68050") {
         localStorage.setItem("isAuthenticated", "true");
         toast.success("Login successful", {
           description: "Welcome to your dashboard.",
@@ -105,11 +105,6 @@ export default function LoginPage() {
             </Button>
           </CardFooter>
         </form>
-        <div className="p-4 text-center text-sm text-muted-foreground">
-          <p>Demo credentials:</p>
-          <p>Email: admin@studio.com</p>
-          <p>Password: password</p>
-        </div>
       </Card>
     </div>
   );

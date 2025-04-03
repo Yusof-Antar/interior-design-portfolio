@@ -1,9 +1,31 @@
 import { PrismaClient } from "@prisma/client";
 
-
 const prisma = new PrismaClient();
 
 async function main() {
+  const header = await prisma.header.upsert({
+    where: { id: "1" }, // Ensure the Header with ID 1 exists
+    update: {}, // No updates needed if it already exists
+    create: {
+      id: "1", // Explicitly set the ID to 1
+      logoText: "My Awesome Logo",
+      heroTitle: "Welcome to My Portfolio",
+      heroSubtitle: "Creative designs for your projects",
+      primaryButtonText: "View Projects",
+      primaryButtonLink: "/projects",
+      secondaryButtonText: "Contact Me",
+      secondaryButtonLink: "/contact",
+      HeaderImage: {
+        create: [
+          { path: "https://example.com/header-image1.jpg" },
+          { path: "https://example.com/header-image2.jpg" },
+        ], // Seed initial images
+      },
+    },
+    include: {
+      HeaderImage: true, // Include related images in the response
+    },
+  });
   await prisma.contactInfo.upsert({
     where: { id: "1" },
     update: {},
