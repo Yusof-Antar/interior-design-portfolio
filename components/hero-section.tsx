@@ -25,7 +25,7 @@ export function HeroSection() {
       setCurrentImage((prev) => (prev + 1) % data?.HeaderImage?.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [data.HeaderImage.length]);
+  }, [data.HeaderImage?.length]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +44,7 @@ export function HeroSection() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {data.HeaderImage.map((image, index) => (
+      {data.HeaderImage?.map((image, index) => (
         <div
           key={index}
           className={`absolute inset-0 transition-opacity duration-1000 ${
