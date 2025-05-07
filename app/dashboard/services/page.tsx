@@ -53,6 +53,7 @@ import { fab } from "@fortawesome/free-brands-svg-icons";
 library.add(fas, far, fab);
 
 export default function ServicesPage() {
+  const [loading, setLoading] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -65,10 +66,12 @@ export default function ServicesPage() {
 
   useEffect(() => {
     const fetchServices = async () => {
+      setLoading(true);
       const response = await fetch("/api/services").then(
         async (result) => await result.json()
       );
       setServices(response);
+      setLoading(false);
     };
     fetchServices();
   }, []);
@@ -81,6 +84,7 @@ export default function ServicesPage() {
   };
 
   const handleAddService = async () => {
+    setLoading(true);
     const newService = await fetch("/api/services", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -90,6 +94,7 @@ export default function ServicesPage() {
     setServices([...services, newService]);
     setFormData({ title: "", icon: "", description: "" });
     setIsAddDialogOpen(false);
+    setLoading(false);
     toast.success("Service added", {
       description: "The service has been added to your offerings.",
     });
@@ -97,7 +102,7 @@ export default function ServicesPage() {
 
   const handleEditService = async () => {
     if (!currentService) return;
-
+    setLoading(true);
     const response = await fetch(`/api/services/${currentService.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -111,15 +116,18 @@ export default function ServicesPage() {
     setServices(updatedServices);
     setCurrentService(null);
     setIsEditDialogOpen(false);
+    setLoading(false);
     toast.success("Service updated", {
       description: "The service has been updated successfully.",
     });
   };
 
   const handleDeleteService = async (id: string) => {
+    setLoading(true);
     await fetch(`/api/services/${id}`, { method: "DELETE" });
 
     setServices(services.filter((service) => service.id !== id));
+    setLoading(false);
     toast.success("Service deleted", {
       description: "The service has been removed from your offerings.",
     });
@@ -195,12 +203,15 @@ export default function ServicesPage() {
             </div>
             <DialogFooter>
               <Button
+                disabled={loading}
                 variant="outline"
                 onClick={() => setIsAddDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button onClick={handleAddService}>Add Service</Button>
+              <Button disabled={loading} onClick={handleAddService}>
+                {loading? "Loading..." : "Add Service"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -233,6 +244,7 @@ export default function ServicesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(service)}
+                      disabled={loading}
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
@@ -242,6 +254,7 @@ export default function ServicesPage() {
                       size="sm"
                       onClick={() => handleDeleteService(service.id)}
                       className="text-destructive hover:bg-destructive/10"
+                      disabled={loading}
                     >
                       <Trash className="mr-2 h-4 w-4" />
                       Delete
@@ -256,6 +269,7 @@ export default function ServicesPage() {
 
       <div className="flex justify-end">
         <Button
+          disabled={loading}
           onClick={() =>
             toast.success("Services saved", {
               description: "Your services have been updated.",
@@ -263,7 +277,7 @@ export default function ServicesPage() {
           }
         >
           <Save className="mr-2 h-4 w-4" />
-          Save Changes
+          {loading? "Loading..." : "Save Changes"}
         </Button>
       </div>
 
@@ -309,12 +323,15 @@ export default function ServicesPage() {
           </div>
           <DialogFooter>
             <Button
+              disabled={loading}
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button onClick={handleEditService}>Save Changes</Button>
+            <Button disabled={loading} onClick={handleEditService}>
+              {loading?"Loading..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

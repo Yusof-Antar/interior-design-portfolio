@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { HomeData } from "@/models/home";
 
 export default function HeaderPage() {
+  const [loading, setLoading] = useState(false);
   const [headerData, setHeaderData] = useState<HomeData>({
     id: "1",
     logoText: "",
@@ -37,6 +38,7 @@ export default function HeaderPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await fetch("/api/home");
         if (!response.ok) {
@@ -56,6 +58,7 @@ export default function HeaderPage() {
         console.error("Error fetching header data:", error);
         toast.error("Failed to load header data.");
       }
+      setLoading(false);
     };
     fetchData();
   }, []);
@@ -76,6 +79,7 @@ export default function HeaderPage() {
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLoading(true);
     if (e.target.files) {
       const files = Array.from(e.target.files); // Convert FileList to array
 
@@ -97,9 +101,11 @@ export default function HeaderPage() {
       }));
     }
     e.target.value = ""; // Reset the file input
+    setLoading(false);
   };
 
   const handleRemoveImage = async (index: number) => {
+    setLoading(true);
     const isFileObject = index < formData.images.length;
     if (isFileObject) {
       // Remove a newly uploaded file (not yet saved to the backend)
@@ -138,9 +144,11 @@ export default function HeaderPage() {
         });
       }
     }
+    setLoading(false);
   };
 
   const handleSaveHeader = async () => {
+    setLoading(true);
     // Validate required fields
     if (
       !headerData.logoText ||
@@ -203,6 +211,7 @@ export default function HeaderPage() {
       console.error("Error saving header data:", error);
       toast.error("Failed to save header data.");
     }
+    setLoading(false);
   };
 
   return (
@@ -345,9 +354,9 @@ export default function HeaderPage() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSaveHeader}>
+        <Button disabled={loading} onClick={handleSaveHeader}>
           <Save className="mr-2 h-4 w-4" />
-          Save Changes
+          {loading ? "Loading..." : "Save Changes"}
         </Button>
       </div>
     </div>

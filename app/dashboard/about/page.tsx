@@ -24,6 +24,7 @@ import { About } from "@/models/about";
 import { v4 as uuidv4 } from "uuid";
 
 export default function AboutPage() {
+  const [loading, setLoading] = useState(false);
   const [aboutData, setAboutData] = useState<About>({
     id: "",
     studio: "",
@@ -65,6 +66,7 @@ export default function AboutPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const response = await fetch("/api/about").then(
         async (result) => await result.json()
       );
@@ -75,6 +77,7 @@ export default function AboutPage() {
       if (response.image) {
         setImagePreview(response.image);
       }
+      setLoading(false);
     };
     fetchData();
   }, []);
@@ -82,6 +85,7 @@ export default function AboutPage() {
   const handleAboutChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    setLoading(true);
     const { name, value, type } = e.target;
 
     if (type === "file") {
@@ -99,6 +103,7 @@ export default function AboutPage() {
       setAboutData((prev) => ({ ...prev, [name]: value }));
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+    setLoading(false);
   };
 
   const handleExpertiseChange = (
@@ -118,6 +123,7 @@ export default function AboutPage() {
   };
 
   const removeExpertise = async (index: number, expertiseId: string) => {
+    setLoading(true);
     try {
       // Send a DELETE request to the backend
       const response = await fetch(`/api/about?expertiseId=${expertiseId}`, {
@@ -142,9 +148,11 @@ export default function AboutPage() {
         description: "Failed to delete expertise entry. Please try again.",
       });
     }
+    setLoading(false);
   };
 
   const handleSaveAbout = async () => {
+    setLoading(true);
     try {
       const newFormData = new FormData();
       // Append text fields to FormData
@@ -186,6 +194,7 @@ export default function AboutPage() {
         description: "Failed to save changes. Please try again.",
       });
     }
+    setLoading(false);
   };
   // const [teamMembers, setTeamMembers] = useState([
   //   {
@@ -374,9 +383,9 @@ export default function AboutPage() {
           </Card>
 
           <div className="flex justify-end">
-            <Button onClick={handleSaveAbout}>
+            <Button disabled={loading} onClick={handleSaveAbout}>
               <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              {loading ? "Loading..." : "Save Changes"}
             </Button>
           </div>
         </TabsContent>

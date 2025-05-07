@@ -26,6 +26,7 @@ import { Plus, Trash, Edit } from "lucide-react";
 import { PortfolioCategory } from "@/models/portfolio-category";
 
 export default function CategoriesDashboard() {
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<PortfolioCategory[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -38,10 +39,12 @@ export default function CategoriesDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const response = await fetch("/api/portfolio-category").then(
         async (result) => await result.json()
       );
       setCategories(response);
+      setLoading(false);
     };
 
     fetchData();
@@ -61,6 +64,7 @@ export default function CategoriesDashboard() {
 
   // Add a new category
   const handleAddCategory = async () => {
+    setLoading(true);
     const newCategory = await fetch("/api/portfolio-category", {
       method: "POST",
       headers: { "Content-Type": "accept/json" },
@@ -69,6 +73,7 @@ export default function CategoriesDashboard() {
     setCategories([...categories, newCategory]);
     setFormData({ title: "", isActive: true });
     setIsAddDialogOpen(false);
+    setLoading(false);
     toast.success("Category added", {
       description: "The category has been added successfully.",
     });
@@ -76,6 +81,7 @@ export default function CategoriesDashboard() {
 
   // Update an existing category
   const handleEditCategory = async () => {
+    setLoading(true);
     if (!currentCategory) return;
 
     const response = await fetch(
@@ -94,6 +100,7 @@ export default function CategoriesDashboard() {
     setCategories(updatedCategories);
     setCurrentCategory(null);
     setIsEditDialogOpen(false);
+    setLoading(false);
     toast.success("Category updated", {
       description: "The category has been updated successfully.",
     });
@@ -101,8 +108,10 @@ export default function CategoriesDashboard() {
 
   // Delete a category
   const handleDeleteCategory = async (id: string) => {
+    setLoading(true);
     await fetch(`/api/portfolio-category/${id}`, { method: "DELETE" });
     setCategories(categories.filter((category) => category.id !== id));
+    setLoading(false);
     toast.success("Category deleted", {
       description: "The category has been removed successfully.",
     });
@@ -173,12 +182,15 @@ export default function CategoriesDashboard() {
             </div>
             <DialogFooter>
               <Button
+                disabled={loading}
                 variant="outline"
                 onClick={() => setIsAddDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button onClick={handleAddCategory}>Add Category</Button>
+              <Button disabled={loading} onClick={handleAddCategory}>
+                {loading?"Loading..." : "Add Category"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -213,12 +225,14 @@ export default function CategoriesDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={loading}
                     onClick={() => openEditDialog(category)}
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
                   </Button>
                   <Button
+                    disabled={loading}
                     variant="outline"
                     size="sm"
                     onClick={() => handleDeleteCategory(category.id)}
@@ -277,7 +291,7 @@ export default function CategoriesDashboard() {
             >
               Cancel
             </Button>
-            <Button onClick={handleEditCategory}>Save Changes</Button>
+            <Button onClick={handleEditCategory}>{loading?"Loading..." : "Save Changes"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

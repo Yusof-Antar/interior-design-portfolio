@@ -33,6 +33,7 @@ import { PortfolioCategory } from "@/models/portfolio-category";
 import ProjectCard from "@/components/portfolio-card";
 
 export default function PortfolioPage() {
+  const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<Portfolio[]>([]);
   const [categories, setCategories] = useState<PortfolioCategory[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -58,6 +59,7 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     const fecthData = async () => {
+      setLoading(true);
       const categoryResponse = await fetch(
         "/api/portfolio-category/active"
       ).then(async (result) => await result.json());
@@ -66,6 +68,7 @@ export default function PortfolioPage() {
       );
       setCategories(categoryResponse);
       setProjects(response);
+      setLoading(false);
     };
 
     fecthData();
@@ -83,6 +86,7 @@ export default function PortfolioPage() {
   };
 
   const handleAddProject = async () => {
+    setLoading(true);
     try {
       // Create a FormData object to send to the backend
       const formDataToSend = new FormData();
@@ -141,9 +145,11 @@ export default function PortfolioPage() {
         description: "An unexpected error occurred.",
       });
     }
+    setLoading(false);
   };
 
   const handleEditProject = async () => {
+    setLoading(true);
     try {
       if (!currentProject) return;
 
@@ -212,9 +218,11 @@ export default function PortfolioPage() {
         description: "An unexpected error occurred.",
       });
     }
+    setLoading(false);
   };
 
   const handleDeleteProject = async (id: string) => {
+    setLoading(true);
     try {
       // Call the API to delete the project
       const response = await fetch(`/api/portfolio/${id}`, {
@@ -245,6 +253,7 @@ export default function PortfolioPage() {
         description: "An unexpected error occurred.",
       });
     }
+    setLoading(false);
   };
 
   const openEditDialog = (project: Portfolio) => {
@@ -386,12 +395,15 @@ export default function PortfolioPage() {
             </div>
             <DialogFooter>
               <Button
+                disabled={loading}
                 variant="outline"
                 onClick={() => setIsAddDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button onClick={handleAddProject}>Add Project</Button>
+              <Button disabled={loading} onClick={handleAddProject}>
+                {loading ? "Loading..." : "Add Project"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -401,6 +413,7 @@ export default function PortfolioPage() {
         {projects.map((project, index) => (
           <ProjectCard
             key={index}
+            loading={loading}
             project={project}
             onEdit={openEditDialog}
             onDelete={handleDeleteProject}
@@ -534,12 +547,15 @@ export default function PortfolioPage() {
           </div>
           <DialogFooter>
             <Button
+              disabled={loading}
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button onClick={handleEditProject}>Save Changes</Button>
+            <Button disabled={loading} onClick={handleEditProject}>
+              {loading ? "Loading..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

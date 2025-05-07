@@ -5,26 +5,26 @@ import { Edit, Trash } from "lucide-react";
 import ImageCarousel from "./image-carousel";
 
 interface ProjectCardProps {
+  loading: boolean;
   project: any; // Replace `any` with your actual project type
   onEdit: (project: any) => void;
   onDelete: (id: string) => void;
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
+  loading,
   project,
   onEdit,
   onDelete,
 }) => {
-
   return (
     <Card className="overflow-hidden">
       {/* Image Carousel */}
       <div className="h-fit">
-
-      <ImageCarousel
-        images={project.ProjectImage?.map((img: any) => img.path)}
+        <ImageCarousel
+          images={project.ProjectImage?.map((img: any) => img.path)}
         />
-        </div>
+      </div>
 
       {/* Card Content */}
       <CardContent className="p-4">
@@ -38,11 +38,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           {project.description}
         </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onEdit(project)}>
+          <Button
+            disabled={loading}
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(project)}
+          >
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
           <Button
+            disabled={loading}
             variant="outline"
             size="sm"
             onClick={() => onDelete(project.id)}

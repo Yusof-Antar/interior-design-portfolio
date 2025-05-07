@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { ContactInfo } from "@/models/contact-info";
 
 export default function ContactPage() {
+  const [loading, setLoading] = useState(false);
   const [contactData, setContactData] = useState<ContactInfo>({
     address: "",
     email: "",
@@ -37,8 +38,17 @@ export default function ContactPage() {
     whatsapp: "",
   });
 
+  const [formSettings, setFormSettings] = useState({
+    emailRecipient: "inquiries@designstudio.com",
+    emailSubject: "New Website Inquiry",
+    confirmationMessage: "Thank you for your inquiry! We'll be in touch soon.",
+    showBudgetField: true,
+    showProjectTypeField: true,
+  });
+
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       const response = await fetch("/api/contact-info").then(
         async (result) => await result.json()
       );
@@ -47,18 +57,11 @@ export default function ContactPage() {
       );
       setContactData(response);
       setSocialLinks(socialResponse);
+      setLoading(false);
     };
 
     fetchData();
   }, []);
-
-  const [formSettings, setFormSettings] = useState({
-    emailRecipient: "inquiries@designstudio.com",
-    emailSubject: "New Website Inquiry",
-    confirmationMessage: "Thank you for your inquiry! We'll be in touch soon.",
-    showBudgetField: true,
-    showProjectTypeField: true,
-  });
 
   const handleContactChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -85,6 +88,7 @@ export default function ContactPage() {
   };
 
   const handleSaveContact = async () => {
+    setLoading(true);
     await fetch("/api/contact-info", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -95,7 +99,7 @@ export default function ContactPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(socialLinks),
     });
-
+    setLoading(false);
     toast.success("Contact information saved", {
       description: "Your contact information has been updated.",
     });
@@ -347,9 +351,9 @@ export default function ContactPage() {
       </Tabs>
 
       <div className="flex justify-end">
-        <Button onClick={handleSaveContact}>
+        <Button disabled={loading} onClick={handleSaveContact}>
           <Save className="mr-2 h-4 w-4" />
-          Save Changes
+          {loading ? "Loading..." : "Save Changes"}
         </Button>
       </div>
     </div>

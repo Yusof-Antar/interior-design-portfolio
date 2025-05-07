@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { Testimonial } from "@/models/testimonial";
 
 export default function TestimonialsPage() {
+  const [loading, setLoading] = useState(false);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -50,10 +51,12 @@ export default function TestimonialsPage() {
 
   useEffect(() => {
     const fetchTestimonials = async () => {
+      setLoading(true);
       const response = await fetch("/api/testimonials").then(
         async (result) => await result.json()
       );
       setTestimonials(response);
+      setLoading(false);
     };
     fetchTestimonials();
   }, []);
@@ -61,6 +64,7 @@ export default function TestimonialsPage() {
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    setLoading(true);
     const { name, value, type } = e.target;
     if (type === "file") {
       const target = e.target as HTMLInputElement;
@@ -87,9 +91,11 @@ export default function TestimonialsPage() {
         description: "Client position cannot be empty.",
       });
     }
+    setLoading(false);
   };
 
   const handleAddTestimonial = async () => {
+    setLoading(true);
     // Validate content
     if (!formData.content || formData.content.trim() === "") {
       toast.error("Validation Error", {
@@ -159,9 +165,11 @@ export default function TestimonialsPage() {
         description: "Failed to add the testimonial. Please try again.",
       });
     }
+    setLoading(false);
   };
 
   const handleDeleteTestimonial = async (id: number) => {
+    setLoading(true);
     await fetch(`/api/testimonials/${id}`, { method: "DELETE" });
     setTestimonials(
       testimonials.filter((testimonial) => testimonial.id !== id)
@@ -171,6 +179,7 @@ export default function TestimonialsPage() {
     toast.success("Testimonial Deleted", {
       description: "The testimonial has been removed from your collection.",
     });
+    setLoading(false);
   };
 
   const openEditDialog = async (testimonial: Testimonial) => {
@@ -197,6 +206,7 @@ export default function TestimonialsPage() {
   };
 
   const handleEditTestimonial = async () => {
+    setLoading(true);
     if (!currentTestimonial) return;
 
     // Validation: Ensure all required fields are present
@@ -274,6 +284,7 @@ export default function TestimonialsPage() {
         description: "Failed to update the testimonial. Please try again.",
       });
     }
+    setLoading(false);
   };
 
   return (
@@ -348,12 +359,15 @@ export default function TestimonialsPage() {
             </div>
             <DialogFooter>
               <Button
+                disabled={loading}
                 variant="outline"
                 onClick={() => setIsAddDialogOpen(false)}
               >
                 Cancel
               </Button>
-              <Button onClick={handleAddTestimonial}>Add Testimonial</Button>
+              <Button disabled={loading} onClick={handleAddTestimonial}>
+                {loading ? "Loading..." : "Add Testimonial"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -399,6 +413,7 @@ export default function TestimonialsPage() {
                   </div>
                   <div className="mt-4 flex gap-2 justify-end">
                     <Button
+                      disabled={loading}
                       variant="outline"
                       size="sm"
                       onClick={() => openEditDialog(testimonial)}
@@ -407,6 +422,7 @@ export default function TestimonialsPage() {
                       Edit
                     </Button>
                     <Button
+                      disabled={loading}
                       variant="outline"
                       size="sm"
                       onClick={() => handleDeleteTestimonial(testimonial.id)}
@@ -425,6 +441,7 @@ export default function TestimonialsPage() {
 
       <div className="flex justify-end">
         <Button
+          disabled={loading}
           onClick={() =>
             toast("Testimonials saved", {
               description: "Your testimonials have been updated.",
@@ -432,7 +449,7 @@ export default function TestimonialsPage() {
           }
         >
           <Save className="mr-2 h-4 w-4" />
-          Save Changes
+          {loading ? "Loadding..." : "Save Changes"}
         </Button>
       </div>
 
@@ -489,12 +506,15 @@ export default function TestimonialsPage() {
           </div>
           <DialogFooter>
             <Button
+              disabled={loading}
               variant="outline"
               onClick={() => setIsEditDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button onClick={handleEditTestimonial}>Save Changes</Button>
+            <Button disabled={loading} onClick={handleEditTestimonial}>
+              {loading ? "Loading..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

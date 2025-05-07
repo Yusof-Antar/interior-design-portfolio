@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { Award } from "@/models/award";
 
 export default function AwardsPage() {
+  const [loading, setLoading] = useState(false);
   const [awards, setAwards] = useState<Award[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function AwardsPage() {
 
   useEffect(() => {
     const fetchAwards = async () => {
+      setLoading(true);
       try {
         const response = await fetch("/api/awards");
         if (!response.ok) throw new Error("Failed to fetch awards");
@@ -49,6 +51,7 @@ export default function AwardsPage() {
       } catch (error) {
         console.error(error);
       }
+      setLoading(false);
     };
     fetchAwards();
   }, []);
@@ -62,6 +65,7 @@ export default function AwardsPage() {
   };
 
   const handleAddAward = async () => {
+    setLoading(true);
     const response = await fetch("/api/awards", {
       method: "POST",
       body: JSON.stringify(formData),
@@ -71,12 +75,14 @@ export default function AwardsPage() {
     setAwards([...awards, response as Award]);
     setFormData({ title: "", year: parseInt(""), organization: "" });
     setIsAddDialogOpen(false);
+    setLoading(false);
     toast.success("Award added", {
       description: "The award has been added to your achievements.",
     });
   };
 
   const handleEditAward = async () => {
+    setLoading(true);
     if (!currentAward) return;
     const response = await fetch(`/api/awards/${currentAward.id}`, {
       method: "PUT",
@@ -91,12 +97,14 @@ export default function AwardsPage() {
     setAwards(updatedAwards);
     setCurrentAward(null);
     setIsEditDialogOpen(false);
+    setLoading(false);
     toast.success("Award updated", {
       description: "The award has been updated successfully.",
     });
   };
 
   const handleDeleteAward = async (id: string) => {
+    setLoading(true);
     await fetch(`/api/awards/${id}`, {
       method: "DELETE",
       headers: {
@@ -105,6 +113,7 @@ export default function AwardsPage() {
     });
 
     setAwards(awards.filter((award) => award.id !== id));
+    setLoading(false);
     toast.success("Award deleted", {
       description: "The award has been removed from your achievements.",
     });
@@ -214,6 +223,7 @@ export default function AwardsPage() {
                     </div>
                     <div className="flex gap-2">
                       <Button
+                        disabled={loading}
                         variant="outline"
                         size="sm"
                         onClick={() => openEditDialog(award)}
@@ -226,6 +236,7 @@ export default function AwardsPage() {
                         size="sm"
                         onClick={() => handleDeleteAward(award.id)}
                         className="text-destructive hover:bg-destructive/10"
+                        disabled={loading}
                       >
                         <Trash className="mr-2 h-4 w-4" />
                         Delete
@@ -241,6 +252,7 @@ export default function AwardsPage() {
 
       <div className="flex justify-end">
         <Button
+          disabled={loading}
           onClick={() =>
             toast.success("Awards saved", {
               description: "Your awards have been updated.",
@@ -248,7 +260,7 @@ export default function AwardsPage() {
           }
         >
           <Save className="mr-2 h-4 w-4" />
-          Save Changes
+          {loading ? "Loading..." : "Save Changes"}
         </Button>
       </div>
 
