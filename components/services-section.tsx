@@ -1,16 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  LayoutListIcon as LayoutPlaneLine,
-  Palette,
-  Ruler,
-  Sofa,
-  Sparkles,
-  Store,
-} from "lucide-react";
-
+import { ArrowRight } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -21,29 +12,46 @@ import {
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
-
-// utils/fontAwesomeUtils.ts
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import { useEffect, useState } from "react";
 import { Service } from "@/models/service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Add all icons to the library
 library.add(fas, far, fab);
 
 export function ServicesSection() {
   const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchServices = async () => {
-      const response = await fetch("/api/services", {
-        headers: { "Content-Type": "application/json" },
-      }).then(async (result) => await result.json());
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      setServices(response);
+        const response = await fetch("/api/services", {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch services");
+        }
+
+        const result = await response.json();
+        setServices(result);
+      } catch (err) {
+        console.error("Error fetching services:", err);
+        setError("Failed to load services. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     fetchServices();
   }, []);
 
@@ -62,60 +70,123 @@ export function ServicesSection() {
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
-  return (
-    <section id="services" className="py-20 md:py-32 bg-muted/30">
-      {services.length > 0 && (
+  if (isLoading) {
+    return (
+      <section id="services" className="py-20 md:py-32 bg-muted/30">
         <div className="container">
           <div className="mb-12 text-center">
-            <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary mb-4">
-              Our Services
-            </div>
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Comprehensive Design Solutions
-            </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground">
-              From concept to completion, we offer a full range of interior
-              design services to transform your space into a beautiful,
-              functional environment.
-            </p>
+            <Skeleton className="h-8 w-32 mx-auto mb-4" />
+            <Skeleton className="h-10 w-3/4 mx-auto mb-4" />
+            <Skeleton className="h-5 w-1/2 mx-auto" />
           </div>
 
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {services.map((service, index) => (
-              <motion.div key={index} variants={item}>
-                <Card className="h-full transition-all hover:shadow-md">
-                  <CardHeader>
-                    <div className="mb-4 text-primary">
-                      <FontAwesomeIcon
-                        icon={service.icon as IconProp}
-                        size="2x"
-                      />
-                    </div>
-                    <CardTitle>{service.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="mb-4">
-                      {service.description}
-                    </CardDescription>
-                    <Link
-                      href="#contact"
-                      className="inline-flex items-center text-sm font-medium text-primary hover:underline"
-                    >
-                      Learn more <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </CardContent>
-                </Card>
-              </motion.div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, index) => (
+              <Card key={index} className="h-full">
+                <CardHeader>
+                  <Skeleton className="h-12 w-12 mb-4 rounded-full" />
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-5/6 mb-2" />
+                  <Skeleton className="h-4 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-24" />
+                </CardContent>
+              </Card>
             ))}
-          </motion.div>
+          </div>
         </div>
-      )}
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="services" className="py-20 md:py-32 bg-muted/30">
+        <div className="container text-center">
+          <div className="mb-6 text-red-500">{error}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          >
+            Retry
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (services.length === 0 && !isLoading) {
+    return (
+      <section id="services" className="py-20 md:py-32 bg-muted/30">
+        <div className="container text-center">
+          <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary mb-4">
+            Our Services
+          </div>
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            Comprehensive Design Solutions
+          </h2>
+          <p className="mx-auto max-w-2xl text-muted-foreground mb-8">
+            No services available at the moment. Please check back later.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section id="services" className="py-20 md:py-32 bg-muted/30">
+      <div className="container">
+        <div className="mb-12 text-center">
+          <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary mb-4">
+            Our Services
+          </div>
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            Comprehensive Design Solutions
+          </h2>
+          <p className="mx-auto max-w-2xl text-muted-foreground">
+            From concept to completion, we offer a full range of interior design
+            services to transform your space into a beautiful, functional
+            environment.
+          </p>
+        </div>
+
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {services.map((service, index) => (
+            <motion.div key={index} variants={item}>
+              <Card className="h-full transition-all hover:shadow-md">
+                <CardHeader>
+                  <div className="mb-4 text-primary">
+                    <FontAwesomeIcon
+                      icon={service.icon as IconProp}
+                      size="2x"
+                    />
+                  </div>
+                  <CardTitle>{service.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="mb-4">
+                    {service.description}
+                  </CardDescription>
+                  <Link
+                    href="#contact"
+                    className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+                  >
+                    Learn more <ArrowRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
     </section>
   );
 }

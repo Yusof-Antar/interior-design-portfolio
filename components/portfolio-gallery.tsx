@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Portfolio } from "@/models/portfolio";
 import ImageCarousel from "./image-carousel";
 
@@ -14,8 +14,9 @@ export function PortfolioGallery() {
     null
   );
   const [projects, setProjects] = useState<Portfolio[]>([]);
-  const [categories, setCategories] = useState<string[]>([]); // Start empty, populate after fetch
-  const [isDataLoaded, setIsDataLoaded] = useState(false); // Track data loading state
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const container = {
     hidden: { opacity: 0 },
@@ -35,40 +36,94 @@ export function PortfolioGallery() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch projects
-        const projectResponse = await fetch("/api/portfolio").then(
-          async (result) => await result.json()
-        );
-        setProjects(projectResponse);
+        setIsLoading(true);
+        setError(null);
 
-        // Fetch categories
-        const categoryResponse = await fetch(
-          "/api/portfolio-category/active"
-        ).then(async (result) => await result.json());
+        // Fetch projects and categories in parallel
+        const [projectsResponse, categoriesResponse] = await Promise.all([
+          fetch("/api/portfolio").then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch projects");
+            return res.json();
+          }),
+          fetch("/api/portfolio-category/active").then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch categories");
+            return res.json();
+          }),
+        ]);
 
-        // Extract unique categories
+        setProjects(projectsResponse);
+
         const uniqueCategories = [
-          ...new Set(categoryResponse.map((item: any) => item.title)),
-        ] as string[];
+          "All",
+          ...new Set(categoriesResponse.map((item: any) => item.title)),
+        ];
 
-        // Update categories, ensuring "All" is always first
-        setCategories(["All", ...uniqueCategories]);
-        setIsDataLoaded(true); // Mark data as loaded
-      } catch (error) {
-        console.error("Error fetching portfolio data:", error);
+        setCategories(uniqueCategories);
+      } catch (err) {
+        console.error("Error fetching portfolio data:", err);
+        setError("Failed to load portfolio. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
-  // Handle loading state
-  if (!isDataLoaded) {
-    return <div></div>;
+  // Loading state
+  if (isLoading) {
+    return (
+      <section id="portfolio" className="py-20 md:py-32 bg-muted/30">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <Skeleton className="h-10 w-1/3 mx-auto mb-4" />
+            <Skeleton className="h-5 w-1/2 mx-auto" />
+          </div>
+
+          <div className="flex justify-center mb-8">
+            <Skeleton className="h-10 w-3/4" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="aspect-[4/3] w-full rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
   }
 
-  // Handle empty projects state
-  if (projects.length === 0) {
-    return <div></div>;
+  // Error state
+  if (error) {
+    return (
+      <section id="portfolio" className="py-20 md:py-32 bg-muted/30">
+        <div className="container text-center">
+          <div className="mb-6 text-red-500">{error}</div>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </section>
+    );
+  }
+
+  // Empty state
+  if (projects.length === 0 && !isLoading) {
+    return (
+      <section id="portfolio" className="py-20 md:py-32 bg-muted/30">
+        <div className="container text-center">
+          <h2 className="mb-2 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            Our Portfolio
+          </h2>
+          <p className="mb-8 mx-auto max-w-2xl text-muted-foreground">
+            No projects available at the moment. Please check back later.
+          </p>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -84,79 +139,72 @@ export function PortfolioGallery() {
           </p>
         </div>
 
-        {/* Conditional Rendering for Tabs */}
-        {isDataLoaded && categories.length > 0 ? (
-          <Tabs defaultValue="All" className="w-full">
-            <TabsList className="mb-8 flex flex-wrap justify-center bg-transparent">
-              {categories.map((category) => (
-                <TabsTrigger
-                  key={category}
-                  value={category}
-                  className="text-sm md:text-base cursor-pointer"
-                >
-                  {category}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
+        <Tabs defaultValue="All" className="w-full">
+          <TabsList className="mb-8 flex flex-wrap justify-center bg-transparent">
             {categories.map((category) => (
-              <TabsContent key={category} value={category}>
-                <motion.div
-                  variants={container}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {projects
-                    .filter(
-                      (project) =>
-                        category === "All" ||
-                        project.category.title === category
-                    )
-                    .map((project) => (
-                      <motion.div
-                        key={project.id}
-                        variants={item}
-                        className="group relative overflow-hidden rounded-lg"
-                      >
-                        <div className="aspect-[4/3] w-full overflow-hidden">
-                          <Image
-                            src={
-                              project.ProjectImage[0]?.path ||
-                              "/placeholder.svg"
-                            }
-                            alt={project.title}
-                            width={800}
-                            height={600}
-                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                          />
-                        </div>
-                        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                          <h3 className="mb-1 text-xl font-semibold text-white">
-                            {project.title}
-                          </h3>
-                          <p className="mb-4 text-sm text-white/80">
-                            {project.category.title}
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-fit bg-transparent text-white border-white hover:bg-white/20"
-                            onClick={() => setSelectedProject(project)}
-                          >
-                            View Project
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))}
-                </motion.div>
-              </TabsContent>
+              <TabsTrigger
+                key={category}
+                value={category}
+                className="text-sm md:text-base cursor-pointer"
+              >
+                {category}
+              </TabsTrigger>
             ))}
-          </Tabs>
-        ) : (
-          <p className="text-center text-muted-foreground">Loading...</p>
-        )}
+          </TabsList>
+
+          {categories.map((category) => (
+            <TabsContent key={category} value={category}>
+              <motion.div
+                variants={container}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {projects
+                  .filter(
+                    (project) =>
+                      category === "All" || project.category.title === category
+                  )
+                  .map((project) => (
+                    <motion.div
+                      key={project.id}
+                      variants={item}
+                      className="group relative overflow-hidden rounded-lg"
+                    >
+                      <div className="aspect-[4/3] w-full overflow-hidden">
+                        <Image
+                          src={
+                            project.ProjectImage[0]?.path || "/placeholder.svg"
+                          }
+                          alt={project.title}
+                          width={800}
+                          height={600}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                        <h3 className="mb-1 text-xl font-semibold text-white">
+                          {project.title}
+                        </h3>
+                        <p className="mb-4 text-sm text-white/80">
+                          {project.category.title}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-fit bg-transparent text-white border-white hover:bg-white/20"
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          View Project
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+              </motion.div>
+            </TabsContent>
+          ))}
+        </Tabs>
 
         {selectedProject && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
@@ -189,16 +237,6 @@ export function PortfolioGallery() {
                       (image) => image.path
                     )}
                   />
-                  {/* <Image
-                    src={
-                      selectedProject.ProjectImage[0]?.path ||
-                      "/placeholder.svg"
-                    }
-                    alt={selectedProject.title}
-                    width={400}
-                    height={400}
-                    className="size-[400px] object-cover"
-                  /> */}
                 </div>
                 <div>
                   <h3 className="mb-2 text-2xl font-bold">
@@ -212,18 +250,6 @@ export function PortfolioGallery() {
                       {selectedProject.description}
                     </p>
                   </div>
-                  {/* <div className="space-y-2">
-                    <h4 className="font-medium">Project Details</h4>
-                    <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-                      <li>Location: New York, NY</li>
-                      <li>Area: 2,400 sq ft</li>
-                      <li>Year: 2023</li>
-                      <li>
-                        Services: Space Planning, Interior Design, Furniture
-                        Selection
-                      </li>
-                    </ul>
-                  </div> */}
                 </div>
               </div>
             </div>

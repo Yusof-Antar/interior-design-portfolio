@@ -10,6 +10,7 @@ import { ServicesSection } from "@/components/services-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
 
 export const metadata: Metadata = {
   title: "Interior Design Portfolio | Creating Spaces, Crafting Experiences",
@@ -20,50 +21,7 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="text-xl font-semibold tracking-tight">
-            STUDIO<span className="text-primary">.</span>
-          </Link>
-          <nav className="hidden md:flex gap-6">
-            <Link
-              href="#portfolio"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Portfolio
-            </Link>
-            <Link
-              href="#about"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="#services"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Services
-            </Link>
-            <Link
-              href="#testimonials"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Testimonials
-            </Link>
-            <Link
-              href="#contact"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Contact
-            </Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Button asChild className="hidden md:inline-flex">
-              <Link href="#contact">Book a Consultation</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
       <main className="flex-1">
         <HeroSection />
         <div className="container mx-auto px-4 py-8 flex justify-center">

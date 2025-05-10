@@ -6,9 +6,11 @@ import { join } from "path";
 export async function GET() {
   try {
     const about = await prisma.about.findFirst({
+      orderBy: {
+        id: "desc", // or 'createdAt': 'desc' if you prefer
+      },
       include: { Expertise: true },
     }); // Fetch the first record
-    console.log(about);
 
     if (!about) {
       return NextResponse.json(

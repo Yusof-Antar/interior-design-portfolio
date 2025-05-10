@@ -45,7 +45,6 @@ export async function PUT(
     const body = await req.json();
     const { title, isActive } = body;
 
-    console.log(title, isActive);
 
     // Validate required fields
     if (!title || typeof title !== "string") {

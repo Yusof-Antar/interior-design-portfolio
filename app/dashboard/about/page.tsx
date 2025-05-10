@@ -70,6 +70,7 @@ export default function AboutPage() {
       const response = await fetch("/api/about").then(
         async (result) => await result.json()
       );
+
       setFormData(response);
       setAboutData(response);
 

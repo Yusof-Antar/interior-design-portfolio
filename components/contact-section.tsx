@@ -1,11 +1,8 @@
 "use client";
 
-import type React from "react";
-
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Mail, MapPin, Phone } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ContactInfo } from "@/models/contact-info";
 
 export function ContactSection() {
@@ -31,31 +29,38 @@ export function ContactSection() {
     budget: "",
   });
 
-  const [contactData, setContactData] = useState<ContactInfo>({
-    address: "",
-    email: "",
-    phone: "",
-    officeHours: "",
-    mapEmbedded: "https://www.google.com/maps/embed?pb=...",
-  });
-
-  const [socialLinks, setSocialLinks] = useState({
-    instagram: "",
-    pinterest: "",
-    linkedin: "",
-    whatsapp: "",
-  });
+  const [contactData, setContactData] = useState<ContactInfo | null>(null);
+  const [socialLinks, setSocialLinks] = useState<Record<string, string> | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("/api/contact-info").then(
-        async (result) => await result.json()
-      );
-      const socialResponse = await fetch("/api/social-media").then(
-        async (result) => await result.json()
-      );
-      setContactData(response);
-      setSocialLinks(socialResponse);
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const [contactResponse, socialResponse] = await Promise.all([
+          fetch("/api/contact-info").then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch contact info");
+            return res.json();
+          }),
+          fetch("/api/social-media").then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch social links");
+            return res.json();
+          }),
+        ]);
+
+        setContactData(contactResponse);
+        setSocialLinks(socialResponse);
+      } catch (err) {
+        console.error("Error fetching contact data:", err);
+        setError("Failed to load contact information. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchData();
@@ -74,7 +79,6 @@ export function ContactSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
     alert("Thank you for your inquiry! We'll be in touch soon.");
     setFormData({
       name: "",
@@ -85,6 +89,108 @@ export function ContactSection() {
       budget: "",
     });
   };
+
+  if (isLoading) {
+    return (
+      <section id="contact" className="py-20 md:py-32 bg-muted/30">
+        <div className="container">
+          <div className="mb-12 text-center">
+            <Skeleton className="h-10 w-1/2 mx-auto mb-4" />
+            <Skeleton className="h-5 w-3/4 mx-auto" />
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Contact Info Skeleton */}
+            <div className="space-y-6">
+              <Skeleton className="h-8 w-1/3 mb-4" />
+              <Skeleton className="h-5 w-5/6 mb-6" />
+
+              <div className="space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-start">
+                    <Skeleton className="h-5 w-5 mr-4" />
+                    <div className="flex-1">
+                      <Skeleton className="h-5 w-24 mb-2" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-6">
+                <Skeleton className="h-8 w-1/3 mb-4" />
+                <div className="flex flex-wrap gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-10 rounded-full" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Form Skeleton */}
+            <Card>
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-16" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-24" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-24" />
+                    <div className="flex flex-wrap gap-4">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="flex items-center space-x-2">
+                          <Skeleton className="h-5 w-5 rounded-full" />
+                          <Skeleton className="h-5 w-16" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-32 w-full" />
+                  </div>
+                </div>
+
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="contact" className="py-20 md:py-32 bg-muted/30">
+        <div className="container text-center">
+          <div className="mb-6 text-red-500">{error}</div>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="contact" className="py-20 md:py-32 bg-muted/30">
@@ -123,7 +229,8 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-medium">Studio Location</h4>
                     <p className="text-muted-foreground">
-                      {contactData.address}
+                      {contactData?.address ||
+                        "123 Design Street, Creative City"}
                     </p>
                   </div>
                 </div>
@@ -132,7 +239,9 @@ export function ContactSection() {
                   <Mail className="mr-4 h-5 w-5 text-primary" />
                   <div>
                     <h4 className="font-medium">Email Us</h4>
-                    <p className="text-muted-foreground">{contactData.email}</p>
+                    <p className="text-muted-foreground">
+                      {contactData?.email || "contact@designstudio.com"}
+                    </p>
                   </div>
                 </div>
 
@@ -140,7 +249,9 @@ export function ContactSection() {
                   <Phone className="mr-4 h-5 w-5 text-primary" />
                   <div>
                     <h4 className="font-medium">Call Us</h4>
-                    <p className="text-muted-foreground">{contactData.phone}</p>
+                    <p className="text-muted-foreground">
+                      {contactData?.phone || "+1 (555) 123-4567"}
+                    </p>
                   </div>
                 </div>
 
@@ -149,26 +260,28 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-medium">Office Hours</h4>
                     <p className="text-muted-foreground">
-                      {contactData.officeHours}
+                      {contactData?.officeHours || "Mon-Fri: 9am-6pm"}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-6">
-                <h3 className="mb-4 text-2xl font-semibold">Follow Us</h3>
-                <div className="flex flex-wrap gap-4">
-                  {Object.entries(socialLinks).map(([platform, link]) => (
-                    <a
-                      key={platform}
-                      href={link}
-                      className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    >
-                      {platform}
-                    </a>
-                  ))}
+              {socialLinks && (
+                <div className="pt-6">
+                  <h3 className="mb-4 text-2xl font-semibold">Follow Us</h3>
+                  <div className="flex flex-wrap gap-4">
+                    {Object.entries(socialLinks).map(([platform, link]) => (
+                      <a
+                        key={platform}
+                        href={link || "#"}
+                        className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                      >
+                        {platform}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </motion.div>
 
