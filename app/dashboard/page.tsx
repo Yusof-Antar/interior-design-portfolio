@@ -119,57 +119,6 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
-      <div>
-        <h2 className="mb-4 text-xl font-semibold">Recent Activity</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Activity Log</CardTitle>
-            <CardDescription>Recent changes to your website</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                {
-                  action: "Portfolio project added",
-                  user: "Admin",
-                  time: "2 hours ago",
-                },
-                {
-                  action: "Testimonial updated",
-                  user: "Admin",
-                  time: "Yesterday",
-                },
-                {
-                  action: "Contact information changed",
-                  user: "Admin",
-                  time: "3 days ago",
-                },
-                {
-                  action: "New service added",
-                  user: "Admin",
-                  time: "1 week ago",
-                },
-              ].map((activity, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 rounded-lg border p-3"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.action}</p>
-                    <p className="text-xs text-muted-foreground">
-                      By {activity.user} • {activity.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

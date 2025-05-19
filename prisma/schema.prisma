@@ -9,9 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")  
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // 1. User
@@ -158,35 +158,15 @@ model SocialMedia {
   createdAt DateTime @default(now())
 }
 
-// 11. Form Types (Dropdown options)
-model FormType {
-  id        String   @id @default(uuid())
-  title     String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  Form      Form[]
-}
-
-// 12. Form Budget (Dropdown options)
-model FormBudget {
-  id        String   @id @default(uuid())
-  text      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  Form      Form[]
-}
-
 // 13. Forms (Contact/Inquiry Forms)
 model Form {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   subject   String
   body      String
   email     String
-  typeId    String
-  type      FormType    @relation(fields: [typeId], references: [id])
-  budgetId  String?
-  budget    FormBudget? @relation(fields: [budgetId], references: [id])
-  createdAt DateTime    @default(now())
+  type      String
+  budget    String
+  createdAt DateTime @default(now())
 }
 
 // 14. Form Settings

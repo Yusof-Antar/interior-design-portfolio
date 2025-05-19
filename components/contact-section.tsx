@@ -6,6 +6,7 @@ import { Calendar, Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -21,10 +22,11 @@ import { ContactInfo } from "@/models/contact-info";
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
+    subject: "New Email",
     name: "",
     email: "",
     phone: "",
-    projectType: "",
+    type: "",
     message: "",
     budget: "",
   });
@@ -77,17 +79,40 @@ export function ContactSection() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Thank you for your inquiry! We'll be in touch soon.");
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      projectType: "",
-      message: "",
-      budget: "",
-    });
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit contact form");
+      }
+
+      toast.success("Contact information saved", {
+        description: "Your contact information has been sent successfully.",
+      });
+      setFormData({
+        subject: "New Email",
+        name: "",
+        email: "",
+        phone: "",
+        type: "",
+        message: "",
+        budget: "",
+      });
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      toast.error("Submission failed", {
+        description: "Something went wrong. Please try again later.",
+      });
+    }
   };
 
   if (isLoading) {
@@ -333,14 +358,14 @@ export function ContactSection() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="projectType">Project Type</Label>
+                        <Label htmlFor="type">Project Type</Label>
                         <Select
-                          value={formData.projectType}
+                          value={formData.type}
                           onValueChange={(value) =>
-                            handleSelectChange("projectType", value)
+                            handleSelectChange("type", value)
                           }
                         >
-                          <SelectTrigger id="projectType">
+                          <SelectTrigger id="type">
                             <SelectValue placeholder="Select project type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -369,16 +394,20 @@ export function ContactSection() {
                         className="flex flex-wrap gap-4"
                       >
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="under-10k" id="under-10k" />
-                          <Label htmlFor="under-10k">Under $10k</Label>
+                          <RadioGroupItem value="under-1k" id="under-1k" />
+                          <Label htmlFor="under-1k">Under $1k</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="10k-25k" id="10k-25k" />
-                          <Label htmlFor="10k-25k">$10k - $25k</Label>
+                          <RadioGroupItem value="1k-5k" id="1k-5k" />
+                          <Label htmlFor="1k-5k">$1k - $5k</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="25k-50k" id="25k-50k" />
-                          <Label htmlFor="25k-50k">$25k - $50k</Label>
+                          <RadioGroupItem value="5k-15k" id="5k-15k" />
+                          <Label htmlFor="5k-15k">$5k - $15k</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="15k-50k" id="15k-50k" />
+                          <Label htmlFor="15k-50k">$15k - $50k</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="50k-plus" id="50k-plus" />

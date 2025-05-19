@@ -137,18 +137,7 @@ export function TestimonialsSection() {
   }
 
   if (testimonials.length === 0 && !isLoading) {
-    return (
-      <section id="testimonials" className="py-20 md:py-32">
-        <div className="container text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            What Our Clients Say
-          </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground mb-8">
-            No testimonials available at the moment.
-          </p>
-        </div>
-      </section>
-    );
+    return <div></div>;
   }
 
   return (
