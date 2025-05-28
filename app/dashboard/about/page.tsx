@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 import { About } from "@/models/about";
 import { v4 as uuidv4 } from "uuid";
+import { uploadFile } from "@/lib/supabase";
 
 export default function AboutPage() {
   const [loading, setLoading] = useState(false);
@@ -155,31 +156,31 @@ export default function AboutPage() {
   const handleSaveAbout = async () => {
     setLoading(true);
     try {
-      const newFormData = new FormData();
-      // Append text fields to FormData
-      newFormData.append("studio", formData.studio);
-      newFormData.append("year", formData.year);
-      newFormData.append("description", formData.description);
-      newFormData.append("mission", formData.mission);
-      newFormData.append("vision", formData.vision);
-      newFormData.append("quote", formData.quote);
-      newFormData.append("quoteAuthor", formData.quoteAuthor);
-      // Append the image file if provided
-      // Handle the image field
+      // Upload the new file if provided
+      let filePath = "";
       if (formData.image instanceof File) {
-        // If a new file is uploaded, append it to FormData
-        newFormData.append("image", formData.image);
-      } else if (aboutData.image) {
-        // If no new file is uploaded, append the existing image URL
-        newFormData.append("image", aboutData.image);
+        const folderName = "about"; // Default folder
+        filePath = await uploadFile(formData.image, "uploads", "about");
+      } else if (typeof formData.image === "string") {
+        // Retain the existing image URL if no new file is uploaded
+        filePath = formData.image;
       }
 
-      // Append expertise data as a JSON string
-      newFormData.append("expertise", JSON.stringify(aboutData.Expertise));
+      const newFormData = {
+        studio: formData.studio,
+        year: formData.year,
+        description: formData.description,
+        mission: formData.mission,
+        vision: formData.vision,
+        quote: formData.quote,
+        quoteAuthor: formData.quoteAuthor,
+        image: filePath, // Use the uploaded file path or existing image URL
+        expertise: JSON.stringify(aboutData.Expertise),
+      };
 
       const response = await fetch("/api/about", {
         method: "PUT",
-        body: newFormData,
+        body: JSON.stringify(newFormData),
       });
 
       if (!response.ok) {

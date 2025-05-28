@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { Portfolio } from "@/models/portfolio";
 import { PortfolioCategory } from "@/models/portfolio-category";
 import ProjectCard from "@/components/portfolio-card";
+import { uploadFile } from "@/lib/supabase";
 
 export default function PortfolioPage() {
   const [loading, setLoading] = useState(false);
@@ -88,23 +89,23 @@ export default function PortfolioPage() {
   const handleAddProject = async () => {
     setLoading(true);
     try {
+      const imagePaths: string[] = [];
+      for (const file of formData.images) {
+        const filePath = await uploadFile(file, "uploads", "portfolio");
+        imagePaths.push(filePath);
+      }
       // Create a FormData object to send to the backend
-      const formDataToSend = new FormData();
-
-      // Append form fields to the FormData object
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("categoryId", formData.category);
-
-      // Append image files to the FormData object
-      formData.images.forEach((file) => {
-        formDataToSend.append("images", file); // "images" matches the API's expected field name
-      });
+      const formDataToSend = {
+        title: formData.title,
+        description: formData.description,
+        categoryId: formData.category,
+        images: imagePaths, // Use the uploaded image paths
+      };
 
       // Call the API to create the project
       const response = await fetch("/api/portfolio", {
         method: "POST",
-        body: formDataToSend,
+        body: JSON.stringify(formDataToSend),
       });
 
       // Handle the API response

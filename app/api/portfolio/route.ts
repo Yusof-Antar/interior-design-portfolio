@@ -35,14 +35,8 @@ export async function GET() {
 export async function POST(request: Request): Promise<Response> {
   try {
     // Parse the incoming FormData
-    const formData = await request.formData();
-
-    // Retrieve fields from the FormData object
-    const title = formData.get("title")?.toString();
-    const description = formData.get("description")?.toString();
-    const link = formData.get("link")?.toString();
-    const categoryId = formData.get("categoryId")?.toString();
-    const files = formData.getAll("images") as File[];
+    const body = await request.json();
+    const { title, description, link, categoryId, images } = body;
 
     // Validation: Ensure all required fields are present
     if (!title || title.trim() === "") {
@@ -66,7 +60,7 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    if (files.length === 0) {
+    if (images.length === 0) {
       return NextResponse.json(
         { error: "At least one image is required" },
         { status: 400 }
@@ -74,14 +68,6 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Define the base upload directory
-    const uploadBaseDir = join(process.cwd(), "public", "uploads");
-
-    // Upload each file and store their paths
-    const imagePaths: string[] = [];
-    for (const file of files) {
-      const filePath = await uploadFile(file, "uploads", "portfolio");
-      imagePaths.push(filePath);
-    }
 
     // Create the project in the database
     const newProject = await prisma.project.create({
@@ -91,7 +77,7 @@ export async function POST(request: Request): Promise<Response> {
         link,
         categoryId,
         ProjectImage: {
-          create: imagePaths.map((path) => ({ path })),
+          create: images.map((path: string) => ({ path })),
         },
       },
       include: {
