@@ -30,21 +30,18 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const formData = await req.formData();
-
-    // Retrieve fields from FormData
-    const studio = formData.get("studio")?.toString();
-    const year = formData.get("year")?.toString();
-    const description = formData.get("description")?.toString();
-    const mission = formData.get("mission")?.toString();
-    const vision = formData.get("vision")?.toString();
-    const quote = formData.get("quote")?.toString();
-    const quoteAuthor = formData.get("quoteAuthor")?.toString();
-    const file = formData.get("image") as unknown as File | null;
-
-    // Parse expertise data (sent as a JSON string)
-    const expertiseRaw = formData.get("expertise")?.toString();
-    const expertise = expertiseRaw ? JSON.parse(expertiseRaw) : [];
+    const body = await req.json();
+    const {
+      studio,
+      year,
+      description,
+      mission,
+      vision,
+      quote,
+      quoteAuthor,
+      image,
+      expertise,
+    } = body;
 
     // Find the first record
     const about = await prisma.about.findFirst();
@@ -53,19 +50,6 @@ export async function PUT(req: Request) {
         { error: "No about section found" },
         { status: 404 }
       );
-    }
-
-    // Define the base upload directory
-    const uploadBaseDir = join(process.cwd(), "public", "uploads");
-    let filePath = about.image; // Default to the existing image path
-
-    // Upload the new file if provided
-    if (file instanceof File) {
-      const folderName = "about"; // Default folder
-      filePath = await uploadFile(file, "uploads", "about");
-    } else if (typeof file === "string") {
-      // Retain the existing image URL if no new file is uploaded
-      filePath = file;
     }
 
     // Update the "About" record
@@ -79,7 +63,7 @@ export async function PUT(req: Request) {
         vision,
         quote,
         quoteAuthor,
-        image: filePath,
+        image: image,
         Expertise: {
           deleteMany: {}, // Clear all existing expertise entries
           create: expertise.map((item: { id: string; path: string }) => ({

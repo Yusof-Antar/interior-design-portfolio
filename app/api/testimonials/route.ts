@@ -26,17 +26,11 @@ export async function GET() {
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    // Parse the incoming FormData
-    const formData = await request.formData();
-
-    // Retrieve fields from the FormData object
-    const file = formData.get("avatar") as unknown as File | null;
-    const content = formData.get("content")?.toString();
-    const name = formData.get("name")?.toString();
-    const position = formData.get("position")?.toString();
+    const body = await request.json();
+    const { content, name, position, avatar } = body;
 
     // Validation: Ensure all required fields are present
-    if (!file) {
+    if (!avatar) {
       return NextResponse.json(
         { error: "No file uploaded for avatar" },
         { status: 400 }
@@ -66,20 +60,13 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Define the base upload directory
-    const uploadBaseDir = join(process.cwd(), "public", "uploads");
-
-    // Upload the file using the utility function
-    const folderName = "testimonials"; // Default folder
-    const filePath = await uploadFile(file, "uploads", "testimonials");
-
     // Create a new testimonial record in the database
     const testimonial = await prisma.testimonial.create({
       data: {
         text: content,
         clientName: name,
         clientPosition: position,
-        avatar: filePath,
+        avatar: avatar,
       },
     });
 

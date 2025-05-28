@@ -175,7 +175,7 @@ export default function AboutPage() {
         quote: formData.quote,
         quoteAuthor: formData.quoteAuthor,
         image: filePath, // Use the uploaded file path or existing image URL
-        expertise: JSON.stringify(aboutData.Expertise),
+        expertise: aboutData.Expertise,
       };
 
       const response = await fetch("/api/about", {

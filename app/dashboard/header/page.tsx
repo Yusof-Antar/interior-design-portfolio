@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { HomeData } from "@/models/home";
+import { uploadFile } from "@/lib/supabase";
 
 export default function HeaderPage() {
   const [loading, setLoading] = useState(false);
@@ -149,6 +150,7 @@ export default function HeaderPage() {
 
   const handleSaveHeader = async () => {
     setLoading(true);
+
     // Validate required fields
     if (
       !headerData.logoText ||
@@ -158,36 +160,45 @@ export default function HeaderPage() {
       !headerData.secondaryButtonText
     ) {
       toast.error("Please fill in all required fields.");
+      setLoading(false);
       return;
     }
 
     try {
-      // Create a FormData object to send to the backend
-      const formDataToSend = new FormData();
-      formDataToSend.append("logoText", headerData.logoText);
-      formDataToSend.append("heroTitle", headerData.heroTitle);
-      formDataToSend.append("heroSubtitle", headerData.heroSubtitle);
-      formDataToSend.append("primaryButtonText", headerData.primaryButtonText);
-      formDataToSend.append(
-        "secondaryButtonText",
-        headerData.secondaryButtonText
-      );
+      // Upload new images to Supabase and collect their URLs
+      const uploadedImageUrls = [];
 
-      // Append kept image URLs
-      formData.keptImages.forEach((img) => {
-        formDataToSend.append("keptImages", img.path);
-      });
+      for (const file of formData.images) {
+        const publicUrl = await uploadFile(file, "uploads", "header");
 
-      // Append new image files
-      formData.images.forEach((file) => {
-        formDataToSend.append("images", file);
-      });
+        uploadedImageUrls.push(publicUrl);
+      }
 
-      // Call the API to update the header
+      // Combine with kept images
+      const allImages = [
+        ...formData.keptImages.map((img) => img.path),
+        ...uploadedImageUrls,
+      ];
+
+      // Prepare payload to send to the backend
+      const payload = {
+        logoText: headerData.logoText,
+        heroTitle: headerData.heroTitle,
+        heroSubtitle: headerData.heroSubtitle,
+        primaryButtonText: headerData.primaryButtonText,
+        secondaryButtonText: headerData.secondaryButtonText,
+        images: allImages, // Array of image URLs
+      };
+
+      // Send JSON payload to backend
       const response = await fetch("/api/home", {
         method: "PUT",
-        body: formDataToSend,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
+
       if (response.ok) {
         const updatedData = await response.json();
         setHeaderData(updatedData);
@@ -198,6 +209,7 @@ export default function HeaderPage() {
             path: img.path,
           })),
         });
+
         toast.success("Header saved", {
           description: "Your header information has been updated.",
         });
@@ -211,6 +223,7 @@ export default function HeaderPage() {
       console.error("Error saving header data:", error);
       toast.error("Failed to save header data.");
     }
+
     setLoading(false);
   };
 

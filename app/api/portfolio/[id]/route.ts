@@ -25,15 +25,8 @@ export async function PUT(
     }
 
     // Parse the incoming FormData
-    const formData = await request.formData();
-
-    // Retrieve fields from the FormData object
-    const title = formData.get("title")?.toString();
-    const description = formData.get("description")?.toString();
-    const link = formData.get("link")?.toString();
-    const categoryId = formData.get("categoryId")?.toString();
-    const files = formData.getAll("images") as File[];
-    const keptImagePaths = formData.getAll("keptImages") as string[];
+    const body = await request.json();
+    const { title, description, link, categoryId, images } = body;
 
     // Validation: Ensure all required fields are present
     if (!title || title.trim() === "") {
@@ -67,45 +60,6 @@ export async function PUT(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // Delete images that are no longer kept
-    const existingImagePaths = existingProject.ProjectImage.map(
-      (image) => image.path
-    );
-
-    const imagesToDelete = existingImagePaths.filter(
-      (path) => !keptImagePaths.includes(path)
-    );
-
-    if (imagesToDelete.length > 0) {
-      // Delete images from the database
-      await prisma.projectImage.deleteMany({
-        where: { projectId: id, path: { in: imagesToDelete } },
-      });
-
-      // Optionally, delete images from the filesystem
-      const fs = require("fs");
-      const uploadBaseDir = join(process.cwd(), "public", "uploads");
-      imagesToDelete.forEach((path) => {
-        const filePath = join(uploadBaseDir, path);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath); // Delete the file
-        }
-      });
-    }
-
-    // Define the base upload directory
-    const uploadBaseDir = join(process.cwd(), "public", "uploads");
-
-    // Upload each new file and store their paths
-    const newImagePaths: string[] = [];
-    for (const file of files) {
-      const filePath = await uploadFile(file, "uploads", "portfolio");
-      newImagePaths.push(filePath);
-    }
-
-    // Combine kept images with new ones
-    const updatedImagePaths = [...keptImagePaths, ...newImagePaths];
-
     // Update the project in the database
     const updatedProject = await prisma.project.update({
       where: { id },
@@ -116,7 +70,7 @@ export async function PUT(
         categoryId,
         ProjectImage: {
           deleteMany: {}, // Delete all old image records
-          create: updatedImagePaths.map((path) => ({ path })), // Recreate all image records
+          create: images.map((path: string) => ({ path })), // Recreate all image records
         },
       },
       include: {

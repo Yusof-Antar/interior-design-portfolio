@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 import { Testimonial } from "@/models/testimonial";
+import { uploadFile } from "@/lib/supabase";
 
 export default function TestimonialsPage() {
   const [loading, setLoading] = useState(false);
@@ -129,16 +130,22 @@ export default function TestimonialsPage() {
     }
 
     // If all validations pass, proceed with the API call
-    const newFormData = new FormData();
-    newFormData.append("avatar", formData.avatar);
-    newFormData.append("content", formData.content);
-    newFormData.append("name", formData.name);
-    newFormData.append("position", formData.position);
+    const avatarFile = await uploadFile(
+      formData.avatar,
+      "uploads",
+      "terstimonials"
+    );
+    const newFormData = {
+      avatar: avatarFile,
+      content: formData.content,
+      name: formData.name,
+      position: formData.position,
+    };
 
     try {
       const response = await fetch("/api/testimonials", {
         method: "POST",
-        body: newFormData,
+        body: JSON.stringify(newFormData),
       });
 
       if (!response.ok) {
@@ -232,23 +239,33 @@ export default function TestimonialsPage() {
     }
 
     try {
+      let avatarFile = "";
+      if (formData.avatar instanceof File) {
+        avatarFile = await uploadFile(
+          formData.avatar,
+          "uploads",
+          "testimonials"
+        );
+      } else {
+        avatarFile = formData.avatar ?? "";
+      }
+
       // Prepare the updated testimonial data
-      const updatedData = new FormData();
-      updatedData.append("content", formData.content);
-      updatedData.append("name", formData.name);
-      updatedData.append("position", formData.position);
+      const updatedData = {
+        text: formData.content,
+        clientName: formData.name,
+        clientPosition: formData.position,
+        avatar: avatarFile,
+      };
 
       // Append the avatar file only if a new file is selected
-      if (formData.avatar instanceof File) {
-        updatedData.append("avatar", formData.avatar);
-      }
 
       // Send the update request to the API
       const response = await fetch(
         `/api/testimonials/${currentTestimonial.id}`,
         {
           method: "PUT",
-          body: updatedData,
+          body: JSON.stringify(updatedData),
         }
       );
 

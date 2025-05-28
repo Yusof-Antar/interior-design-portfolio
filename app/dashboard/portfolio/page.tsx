@@ -154,43 +154,43 @@ export default function PortfolioPage() {
     try {
       if (!currentProject) return;
 
-      // Create a FormData object to send to the backend
-      const formDataToSend = new FormData();
-      formDataToSend.append("id", formData.id);
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("link", formData.link);
-      formDataToSend.append("categoryId", formData.category);
-
-      // Append kept images
-      formData.keptImages.forEach((path) => {
-        formDataToSend.append("keptImages", path);
-      });
-
-      // Append new image files
-      formData.images.forEach((file) => {
+      // Upload new image files to Supabase
+      const uploadedImageUrls = [];
+      for (const file of formData.images) {
         if (file instanceof File) {
-          formDataToSend.append("images", file);
+          const publicUrl = await uploadFile(file, "uploads", "portfolio");
+          uploadedImageUrls.push(publicUrl);
         }
-      });
+      }
 
-      // Call the API to update the project
+      // Combine new image URLs with kept images
+      const allImages = [...formData.keptImages, ...uploadedImageUrls];
+
+      // Build and send JSON payload
       const response = await fetch(`/api/portfolio/${formData.id}`, {
         method: "PUT",
-        body: formDataToSend,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: formData.id,
+          title: formData.title,
+          description: formData.description,
+          link: formData.link,
+          categoryId: formData.category,
+          images: allImages, // full list of image URLs
+        }),
       });
 
       if (response.ok) {
         const updatedProject = await response.json();
 
-        // Update the projects state with the updated project
         setProjects((prev) =>
           prev.map((project) =>
             project.id === updatedProject.id ? updatedProject : project
           )
         );
 
-        // Reset the form data and close the dialog
         setFormData({
           id: "",
           title: "",
@@ -200,10 +200,10 @@ export default function PortfolioPage() {
           keptImages: [],
           category: "",
         });
+
         setCurrentProject(null);
         setIsEditDialogOpen(false);
 
-        // Show a success toast notification
         toast.success("Project updated", {
           description: "The project has been updated successfully.",
         });

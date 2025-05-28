@@ -35,24 +35,18 @@ export async function GET() {
 // PUT: Update the Header with ID 1
 export async function PUT(request: Request): Promise<Response> {
   try {
-    // Parse the incoming FormData
-    const formData = await request.formData();
+    const body = await request.json();
 
-    // Extract fields from FormData
-    const logoText = formData.get("logoText")?.toString();
-    const heroTitle = formData.get("heroTitle")?.toString();
-    const heroSubtitle = formData.get("heroSubtitle")?.toString();
-    const primaryButtonText = formData.get("primaryButtonText")?.toString();
-    const secondaryButtonText = formData.get("secondaryButtonText")?.toString();
+    const {
+      logoText,
+      heroTitle,
+      heroSubtitle,
+      primaryButtonText,
+      secondaryButtonText,
+      images,
+    } = body;
 
     // Extract kept image URLs (existing images to keep)
-    const keptImages = formData
-      .getAll("keptImages")
-      .map((path) => path.toString())
-      .filter((path) => typeof path === "string" && path.trim() !== "");
-
-    // Extract new image files
-    const imageFiles = formData.getAll("images") as File[];
 
     // Validate required fields
     if (
@@ -80,40 +74,6 @@ export async function PUT(request: Request): Promise<Response> {
         throw new Error("Header not found");
       }
 
-      // Identify images to delete (those not in keptImages)
-      const existingImagePaths = existingHeader.HeaderImage.map(
-        (img) => img.path
-      );
-      const imagesToDelete = existingImagePaths.filter(
-        (path) => !keptImages.includes(path)
-      );
-
-      // Delete old images from the database
-      if (imagesToDelete.length > 0) {
-        await tx.headerImage.deleteMany({
-          where: { headerId: "1", path: { in: imagesToDelete } },
-        });
-
-        // Optionally, delete files from the filesystem
-      }
-
-      // Upload new image files to Supabase Storage and get their URLs
-      const uploadedImageUrls = await Promise.all(
-        imageFiles.map(async (file) => {
-          try {
-            return await uploadFile(file, "uploads", "header");
-          } catch (uploadError) {
-            console.error(`Failed to upload file ${file.name}:`, uploadError);
-            throw new Error("Failed to upload one or more images.");
-          }
-        })
-      );
-
-      // Combine kept images and newly uploaded images
-      const allImagePaths = Array.from(
-        new Set([...keptImages, ...uploadedImageUrls])
-      );
-
       // Update the Header with ID 1
       const header = await tx.header.update({
         where: { id: "1" },
@@ -125,7 +85,7 @@ export async function PUT(request: Request): Promise<Response> {
           secondaryButtonText,
           HeaderImage: {
             deleteMany: {}, // Delete all old image records
-            create: allImagePaths.map((path) => ({ path })), // Recreate all image records
+            create: images.map((path: string) => ({ path })), // Recreate all image records
           },
         },
         include: {
