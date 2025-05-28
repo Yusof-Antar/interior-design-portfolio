@@ -4,12 +4,20 @@ import prisma from "@/lib/prisma";
 import fs from "fs";
 import { uploadFile } from "@/lib/supabase";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "50mb", // Adjust as needed
+    },
+  },
+};
+
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ): Promise<Response> {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Validate that the ID is provided
     if (!id || id.trim() === "") {

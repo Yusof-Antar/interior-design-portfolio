@@ -3,6 +3,13 @@ import prisma from "@/lib/prisma";
 import { join } from "path";
 import { uploadFile } from "@/lib/supabase";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "50mb", // Adjust as needed
+    },
+  },
+};
 // GET: Fetch all projects with their associated images
 export async function GET() {
   try {
