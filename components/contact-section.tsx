@@ -295,15 +295,18 @@ export function ContactSection() {
                 <div className="pt-6">
                   <h3 className="mb-4 text-2xl font-semibold">Follow Us</h3>
                   <div className="flex flex-wrap gap-4">
-                    {Object.entries(socialLinks).map(([platform, link]) => (
-                      <a
-                        key={platform}
-                        href={link || "#"}
-                        className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                      >
-                        {platform}
-                      </a>
-                    ))}
+                    {Object.entries(socialLinks)
+                      .filter(([_, link]) => link)
+                      .map(([platform, link]) => (
+                        <a
+                          target="_blank"
+                          key={platform}
+                          href={link || "#"}
+                          className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                        >
+                          {platform}
+                        </a>
+                      ))}
                   </div>
                 </div>
               )}

@@ -50,6 +50,7 @@ export function Footer() {
               .map(([platform, link], index) => {
                 return (
                   <Link
+                    target="_blank"
                     key={index}
                     href={link}
                     className="text-muted-foreground hover:text-primary transition-colors"
