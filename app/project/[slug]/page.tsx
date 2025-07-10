@@ -31,23 +31,23 @@ export async function generateMetadata({
   }
 
   return {
-    title: project.title,
-    description: project.short_description || project.description,
-    keywords: project.tags[0].name || ["interior design", "portfolio"],
+    title: project.data.title,
+    description: project.data.short_description || project.data.description,
+    keywords: project.data.tags[0].name || ["interior design", "portfolio"],
     authors: [{ name: "Your Name", url: "https://yourwebsite.com" }],
     creator: "Your Brand",
     metadataBase: new URL("https://yourwebsite.com"),
     openGraph: {
-      title: project.title,
-      description: project.short_description || project.description,
-      url: `https://yourwebsite.com/project/${project.slug}`,
+      title: project.data.title,
+      description: project.data.short_description || project.data.description,
+      url: `https://yourwebsite.com/project/${project.data.slug}`,
       siteName: "Your Brand",
       images: [
         {
-          url: project.media?.orginal || "/og-image.jpg",
+          url: project.data.media?.orginal || "/og-image.jpg",
           width: 1200,
           height: 630,
-          alt: project.title,
+          alt: project.data.title,
         },
       ],
       locale: "en_US",
@@ -55,13 +55,13 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: project.title,
-      description: project.short_description || project.description,
-      images: [project.media?.original || "/og-image.jpg"],
+      title: project.data.title,
+      description: project.data.short_description || project.data.description,
+      images: [project.data.media?.original || "/og-image.jpg"],
       creator: "@your_twitter_handle",
     },
     alternates: {
-      canonical: `https://yourwebsite.com/project/${project.slug}`,
+      canonical: `https://yourwebsite.com/project/${project.data.slug}`,
     },
   };
 }
@@ -77,13 +77,13 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
+      <h1 className="text-3xl font-bold mb-4">{project.data.title}</h1>
       <img
-        src={project.media?.original}
-        alt={project.title}
+        src={project.data.media?.original}
+        alt={project.data.title}
         className="w-full h-auto rounded-xl mb-6"
       />
-      <p className="text-gray-700">{project.description}</p>
+      <p className="text-gray-700">{project.data.description}</p>
     </div>
   );
 }
