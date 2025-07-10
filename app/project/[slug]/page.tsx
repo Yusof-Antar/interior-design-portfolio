@@ -44,7 +44,7 @@ export async function generateMetadata({
       siteName: "Your Brand",
       images: [
         {
-          url: project.data.media?.orginal || "/og-image.jpg",
+          url: project.data.media?.original || "/og-image.jpg",
           width: 1200,
           height: 630,
           alt: project.data.title,
