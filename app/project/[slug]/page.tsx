@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 // Example fetch from API (replace with your real API)
 async function fetchProjectBySlug(slug: string) {
   const res = await fetch(
-    `admin.falakey.com/api/v1/posts/show/architectural-beauty-of-sheikh-zayed-mosque?locale=ar`,
+    `https://admin.falakey.com/api/v1/posts/show/architectural-beauty-of-sheikh-zayed-mosque?locale=ar`,
     {
       // Enable ISR if needed
       next: { revalidate: 3600 },
