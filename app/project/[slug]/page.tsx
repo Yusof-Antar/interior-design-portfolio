@@ -77,10 +77,10 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="container mx-auto py-12">
-      <h1 className="text-3xl font-bold mb-4">{project.name}</h1>
+      <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
       <img
-        src={project.media?.[0]}
-        alt={project.name}
+        src={project.media?.original}
+        alt={project.title}
         className="w-full h-auto rounded-xl mb-6"
       />
       <p className="text-gray-700">{project.description}</p>
