@@ -1,17 +1,6 @@
 // app/project/[slug]/page.tsx
 import type { Metadata } from "next";
 
-// 1. Get a list of all project slugs
-async function fetchAllProjectSlugs() {
-  const res = await fetch("https://admin.falakey.com/api/v1/posts?locale=ar", {
-    cache: "force-cache", // static export friendly
-  });
-
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data?.data?.map((project: any) => ({ slug: project.slug })) || [];
-}
-
 // 2. Fetch one project by slug
 async function fetchProjectBySlug(slug: string) {
   const res = await fetch(
@@ -23,12 +12,6 @@ async function fetchProjectBySlug(slug: string) {
 
   if (!res.ok) return null;
   return res.json();
-}
-
-// ✅ 3. Static params for all slugs (required for next export)
-export async function generateStaticParams() {
-  const slugs = await fetchAllProjectSlugs();
-  return slugs; // must return: [{ slug: "project-slug" }, ...]
 }
 
 // ✅ 4. Metadata generation (can be dynamic per slug)
