@@ -1,13 +1,23 @@
 // app/project/[slug]/page.tsx
 import type { Metadata } from "next";
 
-// Example fetch from API (replace with your real API)
+// 1. Get a list of all project slugs
+async function fetchAllProjectSlugs() {
+  const res = await fetch("https://admin.falakey.com/api/v1/posts?locale=ar", {
+    cache: "force-cache", // static export friendly
+  });
+
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data?.data?.map((project: any) => ({ slug: project.slug })) || [];
+}
+
+// 2. Fetch one project by slug
 async function fetchProjectBySlug(slug: string) {
   const res = await fetch(
-    `https://admin.falakey.com/api/v1/posts/show/architectural-beauty-of-sheikh-zayed-mosque?locale=ar`,
+    `https://admin.falakey.com/api/v1/posts/show/${slug}?locale=ar`,
     {
-      // Enable ISR if needed
-      next: { revalidate: 3600 },
+      cache: "force-cache", // required for static export
     }
   );
 
@@ -15,7 +25,13 @@ async function fetchProjectBySlug(slug: string) {
   return res.json();
 }
 
-// ✅ Generate metadata dynamically using slug from URL
+// ✅ 3. Static params for all slugs (required for next export)
+export async function generateStaticParams() {
+  const slugs = await fetchAllProjectSlugs();
+  return slugs; // must return: [{ slug: "project-slug" }, ...]
+}
+
+// ✅ 4. Metadata generation (can be dynamic per slug)
 export async function generateMetadata({
   params,
 }: {
@@ -33,10 +49,7 @@ export async function generateMetadata({
   return {
     title: project.data.title,
     description: project.data.short_description || project.data.description,
-    keywords: project.data.tags[0].name || ["interior design", "portfolio"],
-    authors: [{ name: "Your Name", url: "https://yourwebsite.com" }],
-    creator: "Your Brand",
-    metadataBase: new URL("https://yourwebsite.com"),
+    keywords: project.data.tags?.map((tag: any) => tag.name) || [],
     openGraph: {
       title: project.data.title,
       description: project.data.short_description || project.data.description,
@@ -44,7 +57,7 @@ export async function generateMetadata({
       siteName: "Your Brand",
       images: [
         {
-          url: project.data.media?.original || "/og-image.jpg",
+          url: project.data.media?.original,
           width: 1200,
           height: 630,
           alt: project.data.title,
@@ -57,8 +70,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: project.data.title,
       description: project.data.short_description || project.data.description,
-      images: [project.data.media?.original || "/og-image.jpg"],
-      creator: "@your_twitter_handle",
+      images: [project.data.media?.original],
     },
     alternates: {
       canonical: `https://yourwebsite.com/project/${project.data.slug}`,
@@ -66,6 +78,7 @@ export async function generateMetadata({
   };
 }
 
+// ✅ 5. The page component itself
 export default async function ProjectDetailPage({
   params,
 }: {
@@ -73,7 +86,9 @@ export default async function ProjectDetailPage({
 }) {
   const project = await fetchProjectBySlug(params.slug);
 
-  if (!project) return <div className="p-8 text-center">Project not found</div>;
+  if (!project) {
+    return <div className="p-8 text-center">Project not found</div>;
+  }
 
   return (
     <div className="container mx-auto py-12">
